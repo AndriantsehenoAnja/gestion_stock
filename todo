@@ -1,0 +1,4 @@
+faite moi une affichage generaliser : - formulaire (avec argument Object): et fait le fonction dao generaliser pour savee l object dans un data base prostgres(faitte le connection)
+                                      - liste par une tableau(avec argument list<Object>)
+  
+java swing: separer le frame et les panels
