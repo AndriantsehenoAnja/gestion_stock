@@ -7,6 +7,9 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FormPanel<T> extends JPanel {
 
@@ -37,7 +40,14 @@ public class FormPanel<T> extends JPanel {
             if (field.getType() == java.sql.Date.class) {
                 labelText += " (yyyy-MM-dd)";
             }
-
+            if (field.getType().getPackage().getName().equals("model")) {
+                JComboBox comboBox = new JComboBox();
+                List<T> items = new GenericDAO<T>().findAll(field.getType());
+                for (T item : items) {
+                    comboBox.addItem(item);
+                }
+                add(comboBox);
+            }
             JLabel label =
                     new JLabel(labelText);
 

@@ -6,7 +6,7 @@ import java.sql.Date;
 public class Mouvement {
 
     private int id;
-    private int produit_id;
+    private Produit produit_id;
 
     private int quantite;
 
@@ -23,7 +23,7 @@ public class Mouvement {
 
     public Mouvement(
             int id,
-            int produit_id,
+            Produit produit_id,
             int quantite,
             BigDecimal pu,
             BigDecimal prix_total,
@@ -43,7 +43,7 @@ public class Mouvement {
         return id;
     }
 
-    public int getProduit_id() {
+    public Produit getProduit_id() {
         return produit_id;
     }
 
@@ -71,7 +71,7 @@ public class Mouvement {
         this.id = id;
     }
 
-    public void setProduit_id(int produit_id) {
+    public void setProduit_id(Produit produit_id) {
         this.produit_id = produit_id;
     }
 

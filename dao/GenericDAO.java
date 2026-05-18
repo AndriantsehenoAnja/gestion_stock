@@ -5,7 +5,9 @@ import connection.DatabaseConnection;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 public class GenericDAO<T> {
 
     public void save(T object, String tableName) {
@@ -27,6 +29,7 @@ public class GenericDAO<T> {
                 if (fieldName.equals("id") || fieldName.equals("prix_total")) {
                     continue;
                 }
+                
 
                 columns.append(fieldName).append(",");
 
@@ -62,5 +65,38 @@ public class GenericDAO<T> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public static List<T> findAll(Class<T> clazz) {
+
+        List<T> result = new ArrayList<>();
+
+        try (Connection connection =
+                     DatabaseConnection.getConnection()) {
+
+            String sql = "SELECT * FROM " + clazz.getSimpleName().toLowerCase();
+
+            PreparedStatement ps =
+                    connection.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                T obj = clazz.newInstance();
+
+                for (Field field : clazz.getDeclaredFields()) {
+
+                    field.setAccessible(true);
+                    field.set(obj, rs.getObject(field.getName()));
+                }
+
+                result.add(obj);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }
