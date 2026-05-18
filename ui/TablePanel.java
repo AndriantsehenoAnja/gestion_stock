@@ -6,6 +6,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import ecoutes.Ecoute;
+
 public class TablePanel extends JPanel {
 
     private JTable table;
@@ -53,7 +55,7 @@ public class TablePanel extends JPanel {
         }
 
         table = new JTable(model);
-
+        table.addMouseListener(new Ecoute(table));
         add(new JScrollPane(table),
                 BorderLayout.CENTER);
     }

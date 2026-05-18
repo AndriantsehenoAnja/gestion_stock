@@ -16,7 +16,8 @@ Main.java \
 connection/*.java \
 dao/*.java \
 model/*.java \
-ui/*.java
+ui/*.java \
+ecoutes/*.java
 
 # =========================
 # EXECUTION

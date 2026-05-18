@@ -60,23 +60,89 @@ ON mouvement(produit_id);
 CREATE INDEX idx_mouvement_date
 ON mouvement(date_mouvement);
 
-
-
 CREATE OR REPLACE VIEW mouvement_v AS
 
 SELECT
     m.id,
+
     m.produit_id,
+
     p.name AS produit_name,
+
     p.type AS methode_stock,
 
     m.quantite,
-    m.pu,
-    m.prix_total,
+
+    -- PU
+    (
+        CASE
+            WHEN m.type = 'ENTREE'
+            THEN m.pu::numeric(15,2)
+
+            WHEN m.type = 'SORTIE'
+            THEN (
+                SELECT
+                    CASE
+                        WHEN SUM(
+                            CASE
+                                WHEN mv.type = 'ENTREE'
+                                THEN mv.quantite
+
+                                WHEN mv.type = 'SORTIE'
+                                THEN -mv.quantite
+                            END
+                        ) = 0
+                        THEN 0::numeric(15,2)
+
+                        ELSE
+                        (
+                            SUM(
+                                CASE
+                                    WHEN mv.type = 'ENTREE'
+                                    THEN mv.prix_total
+
+                                    WHEN mv.type = 'SORTIE'
+                                    THEN -mv.prix_total
+                                END
+                            )
+
+                            /
+
+                            SUM(
+                                CASE
+                                    WHEN mv.type = 'ENTREE'
+                                    THEN mv.quantite
+
+                                    WHEN mv.type = 'SORTIE'
+                                    THEN -mv.quantite
+                                END
+                            )
+                        )::numeric(15,2)
+                    END
+
+                FROM mouvement mv
+
+                WHERE mv.produit_id = m.produit_id
+
+                AND (
+                    mv.date_mouvement < m.date_mouvement
+
+                    OR (
+                        mv.date_mouvement = m.date_mouvement
+                        AND mv.id <= m.id
+                    )
+                )
+            )
+        END
+    )::numeric(15,2) AS pu,
+
+    m.prix_total::numeric(15,2),
+
     m.date_mouvement,
+
     m.type AS type_mouvement,
 
-    -- quantité totale en stock jusqu'à cette date
+    -- Quantité totale
     (
         SELECT
             COALESCE(
@@ -91,12 +157,22 @@ SELECT
                 ),
                 0
             )
+
         FROM mouvement mv
+
         WHERE mv.produit_id = m.produit_id
-        AND mv.date_mouvement <= m.date_mouvement
+
+        AND (
+            mv.date_mouvement < m.date_mouvement
+
+            OR (
+                mv.date_mouvement = m.date_mouvement
+                AND mv.id <= m.id
+            )
+        )
     ) AS quantite_total,
 
-    -- valeur totale du stock
+    -- Valeur stock
     (
         SELECT
             COALESCE(
@@ -111,9 +187,19 @@ SELECT
                 ),
                 0
             )
+
         FROM mouvement mv
+
         WHERE mv.produit_id = m.produit_id
-        AND mv.date_mouvement <= m.date_mouvement
+
+        AND (
+            mv.date_mouvement < m.date_mouvement
+
+            OR (
+                mv.date_mouvement = m.date_mouvement
+                AND mv.id <= m.id
+            )
+        )
     ) AS valeur_stock,
 
     -- CUMP
@@ -129,35 +215,49 @@ SELECT
                         THEN -mv.quantite
                     END
                 ) = 0
+
                 THEN 0
 
                 ELSE
+                (
+                    SUM(
+                        CASE
+                            WHEN mv.type = 'ENTREE'
+                            THEN mv.prix_total
 
-                SUM(
-                    CASE
-                        WHEN mv.type = 'ENTREE'
-                        THEN mv.prix_total
+                            WHEN mv.type = 'SORTIE'
+                            THEN -mv.prix_total
+                        END
+                    )
 
-                        WHEN mv.type = 'SORTIE'
-                        THEN -mv.prix_total
-                    END
+                    /
+
+                    SUM(
+                        CASE
+                            WHEN mv.type = 'ENTREE'
+                            THEN mv.quantite
+
+                            WHEN mv.type = 'SORTIE'
+                            THEN -mv.quantite
+                        END
+                    )
                 )
 
-                /
-
-                SUM(
-                    CASE
-                        WHEN mv.type = 'ENTREE'
-                        THEN mv.quantite
-
-                        WHEN mv.type = 'SORTIE'
-                        THEN -mv.quantite
-                    END
-                )
             END
+
         FROM mouvement mv
+
         WHERE mv.produit_id = m.produit_id
-        AND mv.date_mouvement <= m.date_mouvement
+
+        AND (
+            mv.date_mouvement < m.date_mouvement
+
+            OR (
+                mv.date_mouvement = m.date_mouvement
+                AND mv.id <= m.id
+            )
+        )
+
     ) AS cump
 
 FROM mouvement m
