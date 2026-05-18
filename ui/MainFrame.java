@@ -180,7 +180,7 @@ public class MainFrame extends JFrame {
                 tableContainer.removeAll();
 
                 TablePanel tablePanel =
-                        new TablePanel(list);
+                        new TablePanel(list,true);
 
                 tableContainer.add(
                         tablePanel,

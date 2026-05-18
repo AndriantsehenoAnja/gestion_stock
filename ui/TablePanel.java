@@ -12,7 +12,13 @@ public class TablePanel extends JPanel {
 
     private JTable table;
 
+    // Constructeur par défaut gardant l'ancien comportement (cliquable par défaut)
     public TablePanel(List<?> objects) {
+        this(objects, true);
+    }
+
+    // Nouveau constructeur avec le paramètre estClicable
+    public TablePanel(List<?> objects, boolean estClicable) {
 
         setLayout(new BorderLayout());
 
@@ -55,7 +61,12 @@ public class TablePanel extends JPanel {
         }
 
         table = new JTable(model);
-        table.addMouseListener(new Ecoute(table));
+        
+        // Ajout conditionnel de l'écouteur
+        if (estClicable) {
+            table.addMouseListener(new Ecoute(table));
+        }
+        
         add(new JScrollPane(table),
                 BorderLayout.CENTER);
     }
